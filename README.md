@@ -1,5 +1,21 @@
 # BRNE Pedestrian-Aware Navigation on Unitree Go2
 
+<p align="center">
+  <img src="https://img.shields.io/badge/ROS_2-Jazzy-22314E?logo=ros"
+       alt="ROS 2 Jazzy">
+  <img src="https://img.shields.io/badge/Robot-Unitree_Go2-111111"
+       alt="Unitree Go2">
+  <img src="https://img.shields.io/badge/Camera-Intel_RealSense_D435i-0071C5"
+       alt="Intel RealSense D435i">
+  <img src="https://img.shields.io/badge/Status-Physically_tested-2EA44F"
+       alt="Physically tested">
+</p>
+
+**A physically validated RGB-D pedestrian-perception and BRNE navigation stack
+for the Unitree Go2.** The robot accepts an RViz goal, tracks pedestrians with
+YOLOv8 Pose and ByteTrack, estimates their state in a fixed planning frame, and
+generates a socially aware avoidance trajectory with the C++ BRNE planner.
+
 ## Physical demonstration videos
 
 The two views below are synchronized to the same part of the experiment. The
@@ -15,19 +31,32 @@ https://github.com/user-attachments/assets/df9fe7b8-475d-4419-bbcb-1d927dce6f1f
 
 https://github.com/user-attachments/assets/154ebcf8-e565-48ed-b779-6cbee4c4b4f1
 
-Real-world ROS 2 Jazzy implementation of pedestrian-aware navigation for a
-Unitree Go2 equipped with an Intel RealSense D435i. The complete pipeline has
-been integrated and physically tested on the robot.
+## Overview
 
-The system detects and tracks pedestrians from RGB-D data, compensates their
-estimated motion for robot translation and rotation, and supplies the tracked
-pedestrian states to the C++ BRNE planner. The robot then follows an RViz goal
-while generating a socially aware avoidance trajectory.
+The RealSense D435i is connected to the robot's external Jetson dock. RGB,
+aligned depth, and calibration data are transported over ROS 2 DDS through
+Ethernet to a personal laptop. The laptop performs perception, pedestrian
+state estimation, BRNE planning, visualization, control, and conversion to the
+Unitree Sport API.
 
 > This is research software for a physical quadruped. Testing must always be
 > supervised by a safety operator with immediate emergency-stop access.
 
-## Tested hardware architecture
+## Contents
+
+- [Physical demonstration videos](#physical-demonstration-videos)
+- [System architecture](#system-architecture)
+- [Main project features](#main-project-features)
+- [Tested configuration](#tested-configuration)
+- [Build on the laptop](#build-on-the-laptop)
+- [Network preparation](#network-preparation)
+- [Run the tested physical system](#run-the-tested-physical-system)
+- [Starting and stopping a trial](#starting-and-stopping-a-trial)
+- [Important topics and frames](#important-topics-and-frames)
+- [Stationary-pedestrian compensation](#stationary-pedestrian-compensation)
+- [Repository structure](#repository-structure)
+
+## System architecture
 
 The deployed system uses two computers:
 
@@ -40,48 +69,32 @@ The deployed system uses two computers:
    - runs YOLOv8 Pose, ByteTrack, 3D pedestrian estimation, BRNE, RViz, the
      trajectory controller, and the Unitree Sport API bridge.
 
-Both computers must use compatible ROS 2/DDS settings and be able to discover
-each other's topics over Ethernet.
+Both computers must use compatible ROS 2/DDS settings and discover each
+other's topics over Ethernet.
 
-```text
-Intel RealSense D435i
-        |
-        | USB
-        v
-External Jetson dock
-  RealSense ROS 2 driver
-        |
-        | Ethernet / ROS 2 DDS
-        v
-Personal laptop
-  YOLOv8 Pose -> ByteTrack -> RGB-D 3D detections
-        |
-        v
-  Pedestrian state and ego-motion compensation
-        |
-        +--------------------+
-        |                    |
-        v                    v
-  /pedestrians          /brne_odom + TF
-        |                    |
-        +---------+----------+
-                  v
-             C++ BRNE
-                  |
-                  v
-              /cmd_buf
-                  |
-                  v
-             Controller
-                  |
-                  v
-              /cmd_vel
-                  |
-                  v
-       Unitree Sport API bridge
-                  |
-                  v
-            Physical Go2
+```mermaid
+flowchart TD
+    D435i[Intel RealSense D435i] -->|USB| RS
+    subgraph Jetson[Unitree external Jetson dock]
+        RS[RealSense ROS 2 driver]
+    end
+    RS -->|Ethernet / ROS 2 DDS| YOLO
+    subgraph Laptop[Personal laptop]
+        YOLO[YOLOv8 Pose + ByteTrack]
+        Depth[Aligned-depth 3D estimation]
+        State[Pedestrian state estimation<br/>and ego-motion compensation]
+        Odom[SportModeState to brne_odom + TF]
+        BRNE[C++ BRNE planner]
+        Ctrl[Trajectory controller]
+        Bridge[Unitree Sport API bridge]
+
+        YOLO --> Depth --> State
+        State -->|/pedestrians| BRNE
+        Odom -->|/brne_odom| BRNE
+        BRNE -->|/cmd_buf| Ctrl
+        Ctrl -->|/cmd_vel| Bridge
+    end
+    Bridge -->|/api/sport/request| Go2[Physical Unitree Go2]
 ```
 
 ## Main project features
@@ -98,9 +111,27 @@ Personal laptop
 - Unitree Go2 Sport API command bridge with command timeout, tilt checks,
   velocity limits, explicit disarming, and optional arming on a new goal.
 
-## Camera mounting calibration
+## Tested configuration
 
-The tested D435i transform relative to `base_link` is:
+| Component | Validated setting |
+|---|---|
+| Robot | Unitree Go2 |
+| RGB-D camera | Intel RealSense D435i |
+| Camera computer | Unitree external Jetson dock |
+| Planning computer | Personal laptop, YOLO inference on CPU |
+| Host OS and ROS | Ubuntu with ROS 2 Jazzy |
+| Middleware | Cyclone DDS |
+| Camera streams | RGB + aligned depth, `640x480 @ 30 Hz` |
+| Detector | `yolov8n-pose.pt` |
+| Tracker | ByteTrack |
+| Planner | C++ BRNE |
+| Planning frame | `brne_odom` |
+| Goal input | RViz 3D Goal Pose |
+| Tested bridge limits | `0.90 m/s` linear, `0.90 rad/s` angular |
+
+### Camera mounting calibration
+
+The validated D435i transform relative to `base_link` is:
 
 | Parameter | Value |
 |---|---:|
@@ -109,8 +140,9 @@ The tested D435i transform relative to `base_link` is:
 | Vertical translation (`z`) | `0.08 m` |
 | Upward pitch | `30 degrees` |
 
-These values are exposed as launch arguments and should be remeasured if the
-camera mount changes.
+These values are exposed as launch arguments. Remeasure them whenever the
+camera mount changes; an incorrect extrinsic transform directly corrupts the
+estimated pedestrian position and velocity.
 
 ## Software requirements
 
@@ -126,7 +158,13 @@ built and sourced before this workspace.
 
 ## Build on the laptop
 
+Clone the workspace and build only the packages used by the D435i deployment:
+
 ```bash
+git clone \
+  https://github.com/AUB-RoboticsTeam/brne-go2-pedestrian-navigation.git \
+  /home/user/pedestrian
+
 source /opt/ros/jazzy/setup.bash
 source /home/user/go2/install/setup.bash
 
@@ -144,7 +182,8 @@ export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 ```
 
 The imported upstream `pedestrian_tracking` package targets a ZED camera and
-is not used by this RealSense deployment.
+is not used by this RealSense deployment. Replace `/home/user/go2` and
+`/home/user/pedestrian` if your workspaces use different locations.
 
 ## Network preparation
 
@@ -165,6 +204,14 @@ export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 ```
 
 ## Run the tested physical system
+
+Launch in this order:
+
+1. RealSense driver on the external Jetson dock;
+2. YOLOv8 Pose, ByteTrack, and 3D detection on the laptop;
+3. pedestrian state estimation, BRNE, RViz, controller, and bridge on the
+   laptop;
+4. verify perception and TF before sending an RViz goal.
 
 ### 1. External Jetson dock: launch the D435i
 
@@ -256,6 +303,29 @@ command direction.
 
 ## Starting and stopping a trial
 
+### Pre-motion verification
+
+Keep the bridge disarmed and confirm that the required live data is available:
+
+```bash
+ros2 topic hz /lf/sportmodestate
+ros2 topic hz /brne_odom
+ros2 topic hz /yolo/detections_3d
+ros2 topic hz /pedestrians
+ros2 run tf2_ros tf2_echo brne_odom camera_link
+```
+
+Also confirm in RViz that:
+
+- the robot pose follows the physical Go2 without jumps;
+- a stationary pedestrian remains stationary when the robot translates or
+  rotates;
+- the green pedestrian marker agrees with the RGB-D detection;
+- BRNE robot and pedestrian samples appear in the `brne_odom` frame;
+- no unrelated person is inside the active planning region.
+
+### Trial procedure
+
 1. Start with the robot stationary and the test area clear.
 2. Verify `/lf/sportmodestate`, `/brne_odom`, `/yolo/detections_3d`, and
    `/pedestrians`.
@@ -286,6 +356,16 @@ ros2 service call /unitree_cmd_vel_bridge/enable std_srvs/srv/SetBool \
   "{data: true}"
 ```
 
+### Minimum physical safety checklist
+
+- use a flat indoor area with free passing space on both sides;
+- assign a separate safety operator;
+- keep the wireless controller and emergency stop accessible;
+- begin with low command limits in every new environment;
+- verify a stable pedestrian track before motion;
+- stop immediately if the track disappears, changes ID repeatedly, or jumps;
+- never place a person where the robot has no safe escape path.
+
 ## Important topics and frames
 
 | Purpose | Topic or frame |
@@ -308,12 +388,27 @@ The 3D detection is transformed at its observation timestamp rather than at
 the latest available robot pose. For short transform gaps, the implementation
 advances both the base translation and camera orientation:
 
-```text
-delta_yaw = yaw_rate * dt
-p_base(t + dt) = p_base(t) + R(yaw) * v_body * dt
-r_camera(t + dt) = Rz(delta_yaw) * r_camera(t)
-q_camera(t + dt) = qz(delta_yaw) * q_camera(t)
-```
+$$
+\Delta\psi = \dot{\psi}\,\Delta t
+$$
+
+$$
+\mathbf p_b(t+\Delta t)
+=
+\mathbf p_b(t)
++
+\mathbf R_z(\psi)\,\mathbf v_b\,\Delta t
+$$
+
+$$
+\mathbf r_c(t+\Delta t)
+=
+\mathbf R_z(\Delta\psi)\,\mathbf r_c(t),
+\qquad
+\mathbf q_c(t+\Delta t)
+=
+\mathbf q_z(\Delta\psi)\otimes\mathbf q_c(t)
+$$
 
 Rotating both the camera lever arm and its quaternion prevents an in-place Go2
 turn from appearing as pedestrian translation. The fixed 30-degree camera
