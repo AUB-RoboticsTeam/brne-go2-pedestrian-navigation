@@ -4,37 +4,16 @@
 
 The two views below are synchronized to the same part of the experiment. The
 RViz screencast begins after its first 4 seconds, and the physical Go2 video
-begins after its first 10 seconds. Select either preview to play the MP4.
+begins after its first 10 seconds. Both videos can be played directly from this
+README.
 
-<table>
-  <tr>
-    <th>BRNE, perception, and RViz</th>
-    <th>Physical Unitree Go2</th>
-  </tr>
-  <tr>
-    <td align="center">
-      <a href="media/videos/brne_rviz_demo.mp4">
-        <img src="media/videos/thumbnails/brne_rviz_demo.jpg"
-             alt="BRNE perception and RViz demonstration" width="460">
-      </a>
-    </td>
-    <td align="center">
-      <a href="media/videos/unitree_go2_demo.mp4">
-        <img src="media/videos/thumbnails/unitree_go2_demo.jpg"
-             alt="Physical Unitree Go2 pedestrian avoidance demonstration"
-             width="260">
-      </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <a href="media/videos/brne_rviz_demo.mp4">Play RViz demonstration</a>
-    </td>
-    <td align="center">
-      <a href="media/videos/unitree_go2_demo.mp4">Play physical Go2 demonstration</a>
-    </td>
-  </tr>
-</table>
+### BRNE, perception, and RViz
+
+https://github.com/user-attachments/assets/df9fe7b8-475d-4419-bbcb-1d927dce6f1f
+
+### Physical Unitree Go2
+
+https://github.com/user-attachments/assets/154ebcf8-e565-48ed-b779-6cbee4c4b4f1
 
 Real-world ROS 2 Jazzy implementation of pedestrian-aware navigation for a
 Unitree Go2 equipped with an Intel RealSense D435i. The complete pipeline has
