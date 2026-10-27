@@ -1,5 +1,41 @@
 # BRNE Pedestrian-Aware Navigation on Unitree Go2
 
+## Physical demonstration videos
+
+The two views below are synchronized to the same part of the experiment. The
+RViz screencast begins after its first 4 seconds, and the physical Go2 video
+begins after its first 10 seconds. Select either preview to play the MP4.
+
+<table>
+  <tr>
+    <th>BRNE, perception, and RViz</th>
+    <th>Physical Unitree Go2</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="media/videos/brne_rviz_demo.mp4">
+        <img src="media/videos/thumbnails/brne_rviz_demo.jpg"
+             alt="BRNE perception and RViz demonstration" width="460">
+      </a>
+    </td>
+    <td align="center">
+      <a href="media/videos/unitree_go2_demo.mp4">
+        <img src="media/videos/thumbnails/unitree_go2_demo.jpg"
+             alt="Physical Unitree Go2 pedestrian avoidance demonstration"
+             width="260">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="media/videos/brne_rviz_demo.mp4">Play RViz demonstration</a>
+    </td>
+    <td align="center">
+      <a href="media/videos/unitree_go2_demo.mp4">Play physical Go2 demonstration</a>
+    </td>
+  </tr>
+</table>
+
 Real-world ROS 2 Jazzy implementation of pedestrian-aware navigation for a
 Unitree Go2 equipped with an Intel RealSense D435i. The complete pipeline has
 been integrated and physically tested on the robot.
@@ -11,38 +47,6 @@ while generating a socially aware avoidance trajectory.
 
 > This is research software for a physical quadruped. Testing must always be
 > supervised by a safety operator with immediate emergency-stop access.
-
-## Demonstration videos
-
-The following locations are reserved for videos from the completed physical
-experiments:
-
-### Static pedestrian head-on avoidance
-
-_Video to be added._
-
-<!-- Replace the line above with, for example:
-[Watch the static-pedestrian experiment](media/videos/static_head_on.mp4)
--->
-
-### Robot translation with a stationary pedestrian
-
-_Video to be added._
-
-<!-- Replace the line above with, for example:
-[Watch the translation-compensation test](media/videos/translation_compensation.mp4)
--->
-
-### Robot rotation with a stationary pedestrian
-
-_Video to be added._
-
-<!-- Replace the line above with, for example:
-[Watch the rotation-compensation test](media/videos/rotation_compensation.mp4)
--->
-
-Instructions for adding the recordings are in
-[`media/videos/README.md`](media/videos/README.md).
 
 ## Tested hardware architecture
 

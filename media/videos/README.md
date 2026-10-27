@@ -1,13 +1,14 @@
 # Demonstration videos
 
-Place compressed demonstration recordings in this directory and update the
-links in the repository's root `README.md`.
+The root README currently presents these synchronized demonstrations:
 
-Suggested filenames:
+- `brne_rviz_demo.mp4`: RViz, pedestrian perception, and BRNE visualization;
+- `unitree_go2_demo.mp4`: physical Unitree Go2 experiment.
 
-- `static_head_on.mp4`
-- `translation_compensation.mp4`
-- `rotation_compensation.mp4`
+Their clickable preview images are stored in `thumbnails/`.
+
+Additional compressed demonstration recordings can be placed in this
+directory and linked from the repository's root `README.md`.
 
 Keep each file below GitHub's individual file-size limit. For large original
 recordings, publish them through an external video host or a GitHub Release and

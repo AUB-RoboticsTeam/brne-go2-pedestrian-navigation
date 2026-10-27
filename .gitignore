@@ -8,6 +8,7 @@
 /METRIC/
 *.mcap
 *.db3
+/media/videos/originals/
 
 # Python environments and caches
 .venv/
