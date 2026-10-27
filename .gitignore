@@ -1,0 +1,33 @@
+# ROS 2 / colcon outputs
+/build/
+/install/
+/log/
+/CMakeFiles/
+
+# Local experiment recordings and generated analysis
+/METRIC/
+*.mcap
+*.db3
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editor and OS files
+.idea/
+.vscode/
+.DS_Store
+*~
+
+# Local archives and duplicate source checkouts
+*.zip
+/src/yolo_ros/yolo_ross/
+
+# Preserve imported upstream Git metadata locally without nesting repositories
+.git-upstream/
+
