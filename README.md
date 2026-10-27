@@ -388,27 +388,23 @@ The 3D detection is transformed at its observation timestamp rather than at
 the latest available robot pose. For short transform gaps, the implementation
 advances both the base translation and camera orientation:
 
-$$
-\Delta\psi = \dot{\psi}\,\Delta t
-$$
+```math
+\Delta \psi = \dot{\psi}\,\Delta t
+```
 
-$$
-\mathbf p_b(t+\Delta t)
-=
-\mathbf p_b(t)
-+
-\mathbf R_z(\psi)\,\mathbf v_b\,\Delta t
-$$
+```math
+\mathbf{p}_b(t+\Delta t) = \mathbf{p}_b(t)
++ \mathbf{R}_z\!\left(\psi(t)\right)\mathbf{v}_b(t)\,\Delta t
+```
 
-$$
-\mathbf r_c(t+\Delta t)
-=
-\mathbf R_z(\Delta\psi)\,\mathbf r_c(t),
-\qquad
-\mathbf q_c(t+\Delta t)
-=
-\mathbf q_z(\Delta\psi)\otimes\mathbf q_c(t)
-$$
+```math
+\begin{aligned}
+\mathbf{r}_c(t+\Delta t)
+  &= \mathbf{R}_z(\Delta\psi)\,\mathbf{r}_c(t), \\
+\mathbf{q}_c(t+\Delta t)
+  &= \mathbf{q}_z(\Delta\psi)\otimes\mathbf{q}_c(t).
+\end{aligned}
+```
 
 Rotating both the camera lever arm and its quaternion prevents an in-place Go2
 turn from appearing as pedestrian translation. The fixed 30-degree camera
